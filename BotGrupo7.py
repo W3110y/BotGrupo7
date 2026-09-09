@@ -10,10 +10,6 @@ class BotGrupo7(BotInRedUC3M):
     def run(self):
         while self.running:
             self.set_turn_radar_right(45) # barrer el radar SIEMPRE
-            self.forward(100)
-            self.turn_gun_left(360)
-            self.back(100)
-            self.turn_gun_left(360)
             self.go() # cierra el turno
 
     # Os han escaneado a un rival -> aquí va vuestro targeting / movimiento
