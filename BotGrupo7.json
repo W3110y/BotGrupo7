@@ -1,7 +1,7 @@
 {
  "name": "Bot Grupo 7",
  "version": "1.0",
- "authors": [ "Giovanny Valladares Rodriguez, Willy Jiao Hu" ],
+ "authors": [ "Giovanny Valladares Rodriguez", "Willy Jiao Hu" ],
  "description": "Bot inicial v0 - Inteligencia en Red",
  "platform": "Python 3.10",
  "programmingLang": "Python"
