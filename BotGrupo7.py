@@ -20,7 +20,6 @@ class BotGrupo7(BotInRedUC3M):
     # Os han escaneado a un rival -> aquí va vuestro targeting / movimiento
     def on_scanned_bot(self, e: ScannedBotEvent):
         self.set_fire(1)
-        self.forward(100)
 
     def on_hit_by_bullet(self, e: HitByBulletEvent):
         self.set_turn_left(100)
