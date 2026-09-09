@@ -21,6 +21,7 @@ class BotGrupo7(BotInRedUC3M):
     def on_scanned_bot(self, e: ScannedBotEvent):
         self.set_fire(1)
 
+    # Os han dado con una bala
     def on_hit_by_bullet(self, e: HitByBulletEvent):
         self.set_turn_left(100)
         self.set_turn_right(100)
