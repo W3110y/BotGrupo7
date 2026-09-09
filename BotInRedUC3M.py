@@ -7,7 +7,7 @@ las mismas 20 columnas; la columna 'tipo' dice que representa la fila.
 TIPOS DE FILA
   propio            estado de vuestro bot en CADA turno
   rival             estado de un rival en CADA escaneo, con distancia y bearing
-  disparo           bala disparada
+  disparo           bala disparada, con el rival y la distancia del ultimo escaneo
   impacto_dado      una bala vuestra acierta a un rival
   impacto_recibido  os acierta la bala de otro bot
   choque_pared      choque contra la pared
@@ -99,6 +99,7 @@ class BotInRedUC3M(Bot):
         self._writer = None
         self._ultima_energia = None
         self._ultimo_turno = ""
+        self._ultimo_rival = None      # (id, x, y) del ultimo escaneo
         self._acumulado = {}
         self._config_name = os.path.splitext(os.path.basename(config_file))[0]
         os.makedirs(CARPETA_DATOS, exist_ok=True)
@@ -147,10 +148,6 @@ class BotInRedUC3M(Bot):
         except (ValueError, OSError):
             pass
 
-    # El servidor manda los resultados ACUMULADOS desde el inicio de la
-    # batalla. Para 'fin_ronda' interesa lo que paso en ESA ronda, asi que
-    # restamos lo acumulado hasta la ronda anterior. 'rank' no es acumulable
-    # y se deja tal cual.
     _METRICAS = (
         ("supervivencia", "survival"),
         ("dano_balas", "bullet_damage"),
@@ -185,6 +182,7 @@ class BotInRedUC3M(Bot):
         self._round += 1
         self._ultima_energia = None
         self._ultimo_turno = ""
+        self._ultimo_rival = None
 
     def on_tick(self, e):
         energia = _val(self, "energy", "get_energy")
@@ -211,6 +209,7 @@ class BotInRedUC3M(Bot):
                 bearing = self.bearing_to(ex, ey)
         except Exception:
             bearing = ""
+        self._ultimo_rival = (getattr(e, "scanned_bot_id", ""), ex, ey)
         self._write_data(
             "rival",
             id=getattr(e, "scanned_bot_id", ""),
@@ -225,6 +224,12 @@ class BotInRedUC3M(Bot):
 
     def on_bullet_fired(self, e):
         b = getattr(e, "bullet", None)
+        id_otro, dist = "", ""
+        if self._ultimo_rival is not None:
+            id_otro, rx, ry = self._ultimo_rival
+            mx, my = _num(_val(self, "x", "get_x")), _num(_val(self, "y", "get_y"))
+            if None not in (mx, my, rx, ry):
+                dist = math.hypot(mx - rx, my - ry)
         self._write_data(
             "disparo",
             id=self._my_id(),
@@ -233,6 +238,8 @@ class BotInRedUC3M(Bot):
             direccion=getattr(b, "direction", ""),
             potencia=getattr(b, "power", ""),
             energia=_val(self, "energy", "get_energy"),
+            id_otro=id_otro,
+            dist_al_rival=dist,
         )
 
     def on_bullet_hit(self, e):
@@ -279,8 +286,6 @@ class BotInRedUC3M(Bot):
         )
 
     def on_round_ended(self, e):
-        # 'vivo' se deduce de la energia del ultimo turno visto: si es <= 0,
-        # el bot murio. No depende de que llegue el evento de muerte.
         vivo = 1 if (self._ultima_energia or 0) > 0 else 0
         datos = {"id": self._my_id(), "vivo": vivo, "turno": self._ultimo_turno}
         r = getattr(e, "results", None)
