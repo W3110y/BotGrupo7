@@ -1,6 +1,5 @@
 from BotInRedUC3M import BotInRedUC3M
-from robocode_tank_royale.bot_api.events import ScannedBotEvent
-from robocode_tank_royale.bot_api.events import HitByBulletEvent
+from robocode_tank_royale.bot_api.events import ScannedBotEvent, HitByBulletEvent, HitWallEvent, HitBotEvent
 
 class BotGrupo7(BotInRedUC3M):
 
@@ -26,11 +25,20 @@ class BotGrupo7(BotInRedUC3M):
         self.set_turn_left(100)
         self.set_turn_right(100)
 
+    # Os habeis chocado cun una pared
+    def on_hit_wall(self, e: HitWallEvent):
+        self.set_turn_left(360)
+        self.forward(100)
+
+    # Os habeis chocado con otro bot
+    def on_hit_bot(self, e: HitBotEvent):
+        self.back(100)
+        self.turn_left(100)
 
     # (Opcional) lógica por turno
     def on_tick(self, e):
         pass
-
+    
 def main():
     BotGrupo7().start()
 
